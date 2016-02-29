@@ -220,7 +220,7 @@ def init_tparams(params):
     initialize Theano shared variables according to the initial parameters
     """
     tparams = OrderedDict()
-    for kk, pp in params.iteritems():
+    for kk, pp in params.items():
         tparams[kk] = theano.shared(params[kk], name=kk)
     return tparams
 
@@ -230,7 +230,7 @@ def load_params(path, params):
     load parameters
     """
     pp = numpy.load(path)
-    for kk, vv in params.iteritems():
+    for kk, vv in params.items():
         if kk not in pp:
             print('%s is not in the archive'%kk)
             continue
