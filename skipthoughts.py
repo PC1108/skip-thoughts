@@ -17,18 +17,17 @@ profile = False
 #-----------------------------------------------------------------------------#
 # Specify model and table locations here
 #-----------------------------------------------------------------------------#
-path_to_models = '/u/rkiros/public_html/models/'
-path_to_tables = '/u/rkiros/public_html/models/'
 #-----------------------------------------------------------------------------#
 
-path_to_umodel = path_to_models + 'uni_skip.npz'
-path_to_bmodel = path_to_models + 'bi_skip.npz'
 
 
-def load_model():
+def load_model(data_path='./data/'):
     """
     Load the model with saved tables
     """
+    path_to_tables = data_path
+    path_to_umodel = data_path + 'uni_skip.npz'
+    path_to_bmodel = data_path + 'bi_skip.npz'
     # Load model options
     print('Loading model parameters...')
     with open('%s.pkl'%path_to_umodel, 'rb') as f:
@@ -53,7 +52,7 @@ def load_model():
 
     # Tables
     print('Loading tables...')
-    utable, btable = load_tables()
+    utable, btable = load_tables(data_path)
 
     # Store everything we need in a dictionary
     print('Packing up...')
@@ -68,14 +67,14 @@ def load_model():
     return model
 
 
-def load_tables():
+def load_tables(data_path):
     """
     Load the tables
     """
     words = []
-    utable = numpy.load(path_to_tables + 'utable.npy')
-    btable = numpy.load(path_to_tables + 'btable.npy')
-    f = open(path_to_tables + 'dictionary.txt', 'rb')
+    utable = numpy.load(data_path + 'utable.npy')
+    btable = numpy.load(data_path + 'btable.npy')
+    f = open(data_path + 'dictionary.txt', 'rb')
     for line in f:
         words.append(line.decode('utf-8').strip())
     f.close()
@@ -84,7 +83,23 @@ def load_tables():
     return utable, btable
 
 
-def encode(model, X, use_norm=True, verbose=True, batch_size=128, use_eos=False):
+def preprocess(text):
+    """
+    Preprocess text for encoder
+    """
+    X = []
+    sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
+    for t in text:
+        sents = sent_detector.tokenize(t)
+        result = ''
+        for s in sents:
+            tokens = word_tokenize(s)
+            result += ' ' + ' '.join(tokens)
+        X.append(result)
+    return X
+
+
+def encode(model, X, preprocess=preprocess, use_norm=True, verbose=True, batch_size=128, use_eos=False):
     """
     Encode sentences in the list X. Each entry will return a vector
     """
@@ -146,22 +161,6 @@ def encode(model, X, use_norm=True, verbose=True, batch_size=128, use_eos=False)
     
     features = numpy.c_[ufeatures, bfeatures]
     return features
-
-
-def preprocess(text):
-    """
-    Preprocess text for encoder
-    """
-    X = []
-    sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
-    for t in text:
-        sents = sent_detector.tokenize(t)
-        result = ''
-        for s in sents:
-            tokens = word_tokenize(s)
-            result += ' ' + ' '.join(tokens)
-        X.append(result)
-    return X
 
 
 def nn(model, text, vectors, query, k=5):
