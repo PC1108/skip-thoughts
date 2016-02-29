@@ -29,8 +29,8 @@ def load_model(data_path='./data/'):
     Load the model with saved tables
     """
     path_to_tables = data_path
-    path_to_umodel = path_to_models + 'uni_skip.npz'
-    path_to_bmodel = path_to_models + 'bi_skip.npz'
+    path_to_umodel = data_path + 'uni_skip.npz'
+    path_to_bmodel = data_path + 'bi_skip.npz'
     # Load model options
     print 'Loading model parameters...'
     with open('%s.pkl'%path_to_umodel, 'rb') as f:
