@@ -72,8 +72,8 @@ def load_tables(data_path):
     Load the tables
     """
     words = []
-    utable = numpy.load(data_path + 'utable.npy')
-    btable = numpy.load(data_path + 'btable.npy')
+    utable = numpy.load(data_path + 'utable.npy', encoding='bytes')
+    btable = numpy.load(data_path + 'btable.npy', encoding='bytes')
     f = open(data_path + 'dictionary.txt', 'rb')
     for line in f:
         words.append(line.decode('utf-8').strip())
@@ -99,7 +99,11 @@ def preprocess(text):
     return X
 
 
-def encode(model, X, preprocess=preprocess, use_norm=True, verbose=True, batch_size=128, use_eos=False):
+def _no_preprocess(text):
+    return text
+
+
+def encode(model, X, preprocess=_no_preprocess, use_norm=True, verbose=True, batch_size=128, use_eos=False):
     """
     Encode sentences in the list X. Each entry will return a vector
     """
@@ -123,7 +127,7 @@ def encode(model, X, preprocess=preprocess, use_norm=True, verbose=True, batch_s
     for k in ds.keys():
         if verbose:
             print(k)
-        numbatches = len(ds[k]) / batch_size + 1
+        numbatches = int(len(ds[k]) / batch_size) + 1
         for minibatch in range(numbatches):
             caps = ds[k][minibatch::numbatches]
 
@@ -229,7 +233,7 @@ def load_params(path, params):
     """
     load parameters
     """
-    pp = numpy.load(path)
+    pp = numpy.load(path, encoding='bytes')
     for kk, vv in params.items():
         if kk not in pp:
             print('%s is not in the archive'%kk)
